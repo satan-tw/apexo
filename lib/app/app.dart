@@ -37,6 +37,7 @@ class ApexoApp extends StatelessWidget {
         stream: localSettings.stream,
         builder: (context, snapshot) {
           return FluentApp(
+            debugShowCheckedModeBanner: false,
             key: WK.fluentApp,
             locale: Locale(locale.s.$code),
             theme: localSettings.selectedTheme == ThemeMode.dark ? FluentThemeData.dark() : FluentThemeData.light(),

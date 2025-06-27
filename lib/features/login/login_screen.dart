@@ -75,7 +75,7 @@ class Login extends StatelessWidget {
                             text: Txt(txt("login")),
                             icon: const Icon(FluentIcons.authenticator_app),
                             body: buildTabContainer(context, [
-                              serverField(),
+
                               emailField(),
                               passwordField(),
                             ], [
@@ -115,7 +115,7 @@ class Login extends StatelessWidget {
                                     loginCtrl.resetInstructionsSent() ? InfoBarSeverity.success : InfoBarSeverity.info,
                               ),
                               const SizedBox(height: 1),
-                              serverField(),
+
                               emailField(),
                             ], [
                               if (loginCtrl.resetInstructionsSent() == false)
@@ -179,19 +179,7 @@ class Login extends StatelessWidget {
     );
   }
 
-  Widget serverField() {
-    return InfoLabel(
-      label: txt("serverUrl"),
-      child: CupertinoTextField(
-        key: WK.serverField,
-        controller: loginCtrl.urlField,
-        textDirection: TextDirection.ltr,
-        enabled: loginCtrl.loadingIndicator().isEmpty,
-        placeholder: "https://[pocketbase server]",
-        onSubmitted: (_) => fieldSubmit(),
-      ),
-    );
-  }
+
 
   Widget emailField() {
     return InfoLabel(
