@@ -364,7 +364,7 @@ class DayCell extends StatelessWidget {
         boxShadow: type == DayCellType.selected ? kElevationToShadow[2] : null,
       ),
       child: Center(
-        child: Txt(intl.DateFormat("d", locale.s.$code).format(day),
+        child: Txt(intl.DateFormat("d", 'en').format(day),
             style: type == DayCellType.normal ? null : const TextStyle(color: Colors.white)),
       ),
     );

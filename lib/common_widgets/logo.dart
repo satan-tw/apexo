@@ -44,8 +44,7 @@ class _AppLogoState extends State<AppLogo> {
             ),
             const SizedBox(width: 5),
             Text("Apexo", style: textStyle),
-            const SizedBox(width: 5),
-            Text(version, style: textStyle)
+
           ],
         ),
       ),

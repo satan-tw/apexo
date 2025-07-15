@@ -283,6 +283,7 @@ class _PatientDetailsState extends State<_PatientDetails> {
               label: "${txt("phone")}:",
               isHeader: true,
               child: CupertinoTextField(
+                maxLength: 10,
                 key: WK.fieldPatientPhone,
                 placeholder: "${txt("phone")}...",
                 controller: TextEditingController(text: widget.patient.phone),
