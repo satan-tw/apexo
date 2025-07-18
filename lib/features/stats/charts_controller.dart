@@ -262,15 +262,15 @@ class _ChartsController {
     final df = localSettings.dateFormat.startsWith("d") == true ? "dd/MM" : "MM/dd";
     switch (interval()) {
       case StatsInterval.days:
-        return DateFormat("$df/yy", locale.s.$code).format(start);
+        return DateFormat("$df/yy", "en").format(start);
       case StatsInterval.weeks:
-        return "W${DateFormat("${_weekOfMonth(start)} MM/yy", locale.s.$code).format(start)}";
+        return "W${DateFormat("${_weekOfMonth(start)} MM/yy", "en").format(start)}";
       case StatsInterval.months:
-        return DateFormat("MMM/yy", locale.s.$code).format(start);
+        return DateFormat("MMM/yy", "en").format(start);
       case StatsInterval.quarters:
-        return "Q${DateFormat("Q yyyy", locale.s.$code).format(start)}";
+        return "Q${DateFormat("Q yyyy", "en").format(start)}";
       default:
-        return DateFormat("yyyy", locale.s.$code).format(start);
+        return DateFormat("yyyy", "en").format(start);
     }
   }
 

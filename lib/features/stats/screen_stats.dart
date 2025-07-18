@@ -96,7 +96,7 @@ class StatsScreen extends StatelessWidget {
                         StyledRadarChart(
                           data: [chartsCtrl.timeOfDayDistribution],
                           labels: List.generate(
-                              24, (index) => DateFormat("hh a", locale.s.$code).format(DateTime(0, 0, 0, index))),
+                              24, (index) => DateFormat("hh a", "en").format(DateTime(0, 0, 0, index))),
                         ),
                         FluentIcons.clock,
                       ),

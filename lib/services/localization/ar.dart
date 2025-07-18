@@ -105,13 +105,13 @@ class Ar implements En {
 
     // appointment card
     "appointment": "موعد",
-    "patient": "مريض",
+    "Patient": "مريض",
     "photos": "صور",
     "pre-opNotes": "ملاحظات قبل العملية",
     "post-opNotes": "ملاحظات بعد العملية",
     "prescription": "وصفة طبية",
     "pay": "دفع",
-    "paid": "مدفوع",
+    "Paid": "مدفوع",
     "price": "السعر",
     "underpaid": "مدفوع جزئياً",
     "overpaid": "مدفوع أكثر من اللازم",
@@ -125,10 +125,10 @@ class Ar implements En {
 
     // patients
     "patientDetails": "تفاصيل المريض",
-    "age": "العمر",
-    "gender": "الجنس",
-    "last visit": "آخر زيارة",
-    "total payments": "إجمالي المدفوعات",
+    "Age": "العمر",
+    "Gender": "الجنس",
+    "Last visit": "آخر زيارة",
+    "Total payments": "إجمالي المدفوعات",
     "daysAgo": "قبل أيام",
     "noVisits": "لا توجد زيارات",
     "addNewPatient": "إضافة مريض جديد",
@@ -202,8 +202,8 @@ class Ar implements En {
     "import": "استيراد",
 
     // labworks
-    "laboratory": "المختبر",
-    "month": "شهر",
+    "Laboratory": "المختبر",
+    "Month": "شهر",
     "newLabwork": "عمل مخبري جديد",
     "labwork": "عمل مخبري",
     "labworkTitle": "عنوان العمل المخبري",

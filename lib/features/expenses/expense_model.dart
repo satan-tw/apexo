@@ -29,7 +29,7 @@ class Expense extends Model {
     Map<String, String> buildingLabels = {
       "issuer": issuer,
       "status": paid ? txt("paid") : txt("due"),
-      "month": DateFormat("MMM yyyy", locale.s.$code).format(date),
+      "Month": DateFormat("MMM yyyy", "en").format(date),
       "amount": amount.toString(),
     };
     for (var i = 0; i < tags.length; i++) {

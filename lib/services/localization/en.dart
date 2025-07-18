@@ -108,13 +108,13 @@ class En {
 
     // appointment card
     "appointment": "Appointment",
-    "patient": "Patient",
+    "Patient": "Patient",
     "photos": "Photos",
     "pre-opNotes": "Pre-op notes",
     "post-opNotes": "Post-op notes",
     "prescription": "Prescription",
     "pay": "Pay",
-    "paid": "Paid",
+    "Paid": "Paid",
     "price": "Price",
     "underpaid": "Underpaid",
     "overpaid": "Overpaid",
@@ -128,10 +128,10 @@ class En {
 
     // patients
     "patientDetails": "Patient Details",
-    "age": "Age",
-    "gender": "Gender",
-    "last visit": "Last visit",
-    "total payments": "Total payments",
+    "Age": "Age",
+    "Gender": "Gender",
+    "Last visit": "Last visit",
+    "Total payments": "Total payments",
     "daysAgo": "days ago",
     "noVisits": "No visits",
     "addNewPatient": "Add new patient",
@@ -206,8 +206,8 @@ class En {
     "import": "Import",
 
     // labworks
-    "laboratory": "Laboratory",
-    "month": "month",
+    "Laboratory": "Laboratory",
+    "Month": "Month",
     "newLabwork": "New Labwork",
     "labwork": "labwork",
     "labworkTitle": "Labwork title",

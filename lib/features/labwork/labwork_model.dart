@@ -19,7 +19,7 @@ class Labwork extends Model {
   get labels {
     return {
       "Laboratory": lab,
-      "Month": DateFormat("MMM yyyy", locale.s.$code).format(date),
+      "Month": DateFormat("MMM yyyy", "en").format(date),
       "Patient": patient?.title ?? "Unknown",
       "Paid": paid ? txt("paid") : txt("due"),
       "doctors": operators.map((e) => e.title).join(", "),

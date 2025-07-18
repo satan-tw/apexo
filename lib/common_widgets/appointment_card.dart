@@ -350,7 +350,7 @@ class AppointmentCard extends StatelessWidget {
   Text _buildFormattedDate(Color color) {
     final df = localSettings.dateFormat.startsWith("d") == true ? "d/MM" : "MM/d";
     return Txt(
-      intl.DateFormat("E $df yyyy - hh:mm a", locale.s.$code).format(appointment.date),
+      intl.DateFormat("E $df yyyy - hh:mm a", "en").format(appointment.date),
       style: TextStyle(color: color, fontSize: 13, fontWeight: FontWeight.bold),
     );
   }

@@ -172,7 +172,7 @@ class WeekAgendaCalendarState<Item extends Appointment> extends State<WeekAgenda
       calendarBuilders: CalendarBuilders(
         dowBuilder: (context, day) => Center(
           child: Txt(
-            intl.DateFormat("EE", locale.s.$code).format(day),
+            intl.DateFormat("EE", "en").format(day),
           ),
         ),
         headerTitleBuilder: (context, day) {
@@ -181,7 +181,7 @@ class WeekAgendaCalendarState<Item extends Appointment> extends State<WeekAgenda
             children: [
               Center(
                 child: Txt(
-                  intl.DateFormat('MMMM yyyy', locale.s.$code).format(day),
+                  intl.DateFormat('MMMM yyyy', "en").format(day),
                 ),
               ),
               const Divider(size: 20, direction: Axis.vertical),
@@ -280,7 +280,7 @@ class WeekAgendaCalendarState<Item extends Appointment> extends State<WeekAgenda
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Txt(
-            intl.DateFormat("$df / yyyy", locale.s.$code).format(selectedDate),
+            intl.DateFormat("$df / yyyy", "en").format(selectedDate),
             style: const TextStyle(fontWeight: FontWeight.w500),
           ),
         ],
@@ -442,7 +442,7 @@ class AppointmentCalendarTile<Item extends Appointment> extends StatelessWidget 
                           ? const Icon(FluentIcons.clock)
                           : const Icon(FluentIcons.open_in_new_tab),
                       const SizedBox(width: 5),
-                      Txt(intl.DateFormat('hh:mm a', locale.s.$code).format(item.date)),
+                      Txt(intl.DateFormat('hh:mm a', "en").format(item.date)),
                     ],
                   ),
                 ),

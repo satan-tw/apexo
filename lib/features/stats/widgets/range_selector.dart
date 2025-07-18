@@ -46,7 +46,7 @@ class ChartsRangeSelector extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Txt(txt("start"), style: _textStyle),
-                          Txt(DateFormat("$df/yyyy", locale.s.$code).format(chartsCtrl.start()), style: _textStyle),
+                          Txt(DateFormat("$df/yyyy", "en").format(chartsCtrl.start()), style: _textStyle),
                         ],
                       ),
                     ],
@@ -81,7 +81,7 @@ class ChartsRangeSelector extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.end,
                         children: [
                           Txt(txt("end"), style: _textStyle),
-                          Txt(DateFormat("$df/yyyy", locale.s.$code).format(chartsCtrl.end()), style: _textStyle),
+                          Txt(DateFormat("$df/yyyy", "en").format(chartsCtrl.end()), style: _textStyle),
                         ],
                       ),
                       const SizedBox(width: 10),

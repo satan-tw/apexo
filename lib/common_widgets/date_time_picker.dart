@@ -47,7 +47,7 @@ class DateTimePickerState extends State<DateTimePicker> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Txt(DateFormat(widget.format, locale.s.$code).format(value)),
+            Txt(DateFormat(widget.format, "en").format(value)),
             AcrylicButton(icon: widget.buttonIcon, text: widget.buttonText, onPressed: pick)
           ],
         ),

@@ -64,7 +64,7 @@ class BackupsSettings extends StatelessWidget {
   Widget buildBackupTile(BackupFile element, BuildContext context) {
     final df = localSettings.dateFormat.startsWith("d") == true ? "d/MM" : "MM/d";
     return ServicesListItem(
-      title: DateFormat("$df/yy hh:mm a", locale.s.$code).format(element.date),
+      title: DateFormat("$df/yy hh:mm a", "en").format(element.date),
       subtitle: element.key,
       actions: [
         buildDownloadButton(element, context),

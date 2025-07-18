@@ -69,7 +69,7 @@ class DashboardScreen extends StatelessWidget {
                           style: const TextStyle(fontSize: 20),
                         ),
                         Txt(
-                          DateFormat("MMMM d yyyy, hh:mm:a", locale.s.$code)
+                          DateFormat("MMMM d yyyy, hh:mm:a", "en")
                               .format(DateTime.now()),
                           style: const TextStyle(fontSize: 14),
                         ),
