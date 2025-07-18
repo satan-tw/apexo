@@ -1,4 +1,5 @@
 import 'package:apexo/app/routes.dart';
+import 'package:apexo/common_widgets/apexo_field.dart';
 import 'package:apexo/common_widgets/appointments_list_footer.dart';
 import 'package:apexo/core/multi_stream_builder.dart';
 import 'package:apexo/services/archived.dart';
@@ -17,14 +18,20 @@ import 'package:apexo/features/settings/settings_stores.dart';
 import 'package:apexo/widget_keys.dart';
 import 'package:fluent_ui/fluent_ui.dart' hide TextBox;
 import 'package:flutter/cupertino.dart';
+import 'package:form_validator/form_validator.dart';
+
+final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
 Future<Patient> openPatient([Patient? patient]) {
   final editingCopy = Patient.fromJson(patient?.toJson() ?? {});
   final panel = Panel<Patient>(
+    key: _key,
     item: editingCopy,
     store: patients,
     icon: FluentIcons.medication_admin,
-    title: patients.get(editingCopy.id) == null ? txt("newPatient") : editingCopy.title,
+    title: patients.get(editingCopy.id) == null
+        ? txt("newPatient")
+        : editingCopy.title,
     tabs: [
       PanelTab(
         title: txt("patientDetails"),
@@ -59,6 +66,7 @@ Future<Patient> openPatient([Patient? patient]) {
 
 class _PrintQRButton extends StatelessWidget {
   final Patient patient;
+
   const _PrintQRButton(this.patient);
 
   @override
@@ -71,7 +79,11 @@ class _PrintQRButton extends StatelessWidget {
           children: [
             FilledButton(
                 child: Row(
-                  children: [const Icon(FluentIcons.print), const SizedBox(width: 5), Txt(txt("printQR"))],
+                  children: [
+                    const Icon(FluentIcons.print),
+                    const SizedBox(width: 5),
+                    Txt(txt("printQR"))
+                  ],
                 ),
                 onPressed: () {
                   printingQRCode(
@@ -90,7 +102,9 @@ class _PrintQRButton extends StatelessWidget {
 
 class _PatientWebPage extends StatelessWidget {
   final Patient patient;
+
   const _PatientWebPage(this.patient);
+
   @override
   Widget build(BuildContext context) {
     return Column(children: [
@@ -113,7 +127,9 @@ class _PatientWebPage extends StatelessWidget {
 
 class _PatientAppointments extends StatelessWidget {
   final Patient patient;
+
   const _PatientAppointments(this.patient);
+
   @override
   Widget build(BuildContext context) {
     return MStreamBuilder(
@@ -129,8 +145,10 @@ class _PatientAppointments extends StatelessWidget {
                       final appointment = patient.allAppointments[index];
                       String? difference;
                       if (patient.allAppointments.last != appointment) {
-                        int differenceInDays =
-                            appointment.date.difference(patient.allAppointments[index + 1].date).inDays.abs();
+                        int differenceInDays = appointment.date
+                            .difference(patient.allAppointments[index + 1].date)
+                            .inDays
+                            .abs();
 
                         difference =
                             "${txt("after")} $differenceInDays ${txt("day${(differenceInDays > 1) ? "s" : ""}")}";
@@ -147,7 +165,8 @@ class _PatientAppointments extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(10, 10, 12, 50),
                       child: Acrylic(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5)),
                         elevation: 50,
                         child: Container(
                           padding: const EdgeInsets.all(10),
@@ -157,7 +176,9 @@ class _PatientAppointments extends StatelessWidget {
                               boxShadow: kElevationToShadow[4],
                               border: Border(
                                   top: BorderSide(
-                                color: (colorBasedOnPayments(patient.paymentsMade, patient.pricesGiven) ??
+                                color: (colorBasedOnPayments(
+                                            patient.paymentsMade,
+                                            patient.pricesGiven) ??
                                         FluentTheme.of(context).cardColor)
                                     .withValues(alpha: 0.3),
                                 width: 5,
@@ -165,10 +186,14 @@ class _PatientAppointments extends StatelessWidget {
                           child: Column(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 5),
-                                child: Txt("${txt("paymentSummary")} (${globalSettings.get("currency_______").value})",
-                                    style:
-                                        const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: Colors.grey)),
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 5),
+                                child: Txt(
+                                    "${txt("paymentSummary")} (${globalSettings.get("currency_______").value})",
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey)),
                               ),
                               const SizedBox(height: 10),
                               const Divider(),
@@ -197,7 +222,10 @@ class _PatientAppointments extends StatelessWidget {
                                         : patient.underPaid
                                             ? txt("underpaid")
                                             : txt("fullyPaid"),
-                                    amount: (patient.paymentsMade - patient.pricesGiven).abs().toString(),
+                                    amount: (patient.paymentsMade -
+                                            patient.pricesGiven)
+                                        .abs()
+                                        .toString(),
                                   )
                                 ],
                               ),
@@ -214,6 +242,7 @@ class _PatientAppointments extends StatelessWidget {
 
 class _PatientDetails extends StatefulWidget {
   final Patient patient;
+
   const _PatientDetails(this.patient);
 
   @override
@@ -223,126 +252,159 @@ class _PatientDetails extends StatefulWidget {
 class _PatientDetailsState extends State<_PatientDetails> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InfoLabel(
-          label: "${txt("name")}:",
-          isHeader: true,
-          child: CupertinoTextField(
-            key: WK.fieldPatientName,
-            placeholder: "${txt("name")}...",
-            controller: TextEditingController(text: widget.patient.title),
-            onChanged: (value) => widget.patient.title = value,
-          ),
-        ),
-        Row(mainAxisSize: MainAxisSize.min, children: [
-          Expanded(
-            child: InfoLabel(
-              label: "${txt("birthYear")}:",
-              isHeader: true,
-              child: CupertinoTextField(
-                key: WK.fieldPatientYOB,
-                placeholder: "${txt("birthYear")}...",
-                controller: TextEditingController(text: widget.patient.birth.toString()),
-                onChanged: (value) => widget.patient.birth = int.tryParse(value) ?? widget.patient.birth,
-              ),
+    return Form(
+      key: _key,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InfoLabel(
+            label: "${txt("name")}:",
+            isHeader: true,
+            child: ApexoField(
+              key: WK.fieldPatientName,
+              placeHolder: "${txt("name")}...",
+              controller: TextEditingController(text: widget.patient.title),
+              onChanged: (value) => widget.patient.title = value,
+              validator: ValidationBuilder().required().build(),
             ),
           ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: InfoLabel(
-              label: "${txt("gender")}:",
-              isHeader: true,
-              child: ComboBox<int>(
-                key: WK.fieldPatientGender,
-                isExpanded: true,
-                items: [
-                  ComboBoxItem<int>(
-                    value: 1,
-                    child: Txt("♂️ ${txt("male")}"),
-                  ),
-                  ComboBoxItem<int>(
-                    value: 0,
-                    child: Txt("♀️ ${txt("female")}"),
-                  )
-                ],
-                value: widget.patient.gender,
-                onChanged: (value) {
-                  setState(() {
-                    widget.patient.gender = value ?? widget.patient.gender;
-                  });
-                },
+          Row(mainAxisSize: MainAxisSize.min, children: [
+            Expanded(
+              child: InfoLabel(
+                label: "${txt("birthYear")}:",
+                isHeader: true,
+                child: ApexoField(
+                  key: WK.fieldPatientYOB,
+                  placeHolder: "${txt("birthYear")}...",
+                  controller: TextEditingController(
+                      text: widget.patient.birth.toString()),
+                  onChanged: (value) => widget.patient.birth =
+                      int.tryParse(value) ?? widget.patient.birth,
+                  validator: ValidationBuilder()
+                      .required()
+                      .regExp(RegExp(r'^\d{4}$'), txt("birtv"))
+                      .add(
+                    (value) {
+                      final regex = RegExp(r'^\d{4}$');
+                      if (!regex.hasMatch(value!)) return txt('birtv');
+
+                      final intYear = int.parse(value!);
+                      if (!(intYear >= 1900 && intYear <= 2018))
+                        return txt('birtv');
+                      return null;
+                    },
+                  ).build(),
+                ),
               ),
             ),
-          ),
-        ]),
-        Row(children: [
-          Expanded(
-            child: InfoLabel(
-              label: "${txt("phone")}:",
-              isHeader: true,
-              child: CupertinoTextField(
-                maxLength: 10,
-                key: WK.fieldPatientPhone,
-                placeholder: "${txt("phone")}...",
-                controller: TextEditingController(text: widget.patient.phone),
-                onChanged: (value) => widget.patient.phone = value,
-                prefix: CallIconButton(phoneNumber: widget.patient.phone),
+            const SizedBox(width: 10),
+            Expanded(
+              child: InfoLabel(
+                label: "${txt("gender")}:",
+                isHeader: true,
+                child: ComboBox<int>(
+                  key: WK.fieldPatientGender,
+                  isExpanded: true,
+                  items: [
+                    ComboBoxItem<int>(
+                      value: 1,
+                      child: Txt("♂️ ${txt("male")}"),
+                    ),
+                    ComboBoxItem<int>(
+                      value: 0,
+                      child: Txt("♀️ ${txt("female")}"),
+                    )
+                  ],
+                  value: widget.patient.gender,
+                  onChanged: (value) {
+                    setState(() {
+                      widget.patient.gender = value ?? widget.patient.gender;
+                    });
+                  },
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: InfoLabel(
-              label: "${txt("email")}:",
-              isHeader: true,
-              child: CupertinoTextField(
-                key: WK.fieldPatientEmail,
-                placeholder: "${txt("email")}...",
-                controller: TextEditingController(text: widget.patient.email),
-                onChanged: (value) => widget.patient.email = value,
+          ]),
+          Row(children: [
+            Expanded(
+              child: InfoLabel(
+                label: "${txt("phone")}:",
+                isHeader: true,
+                child: ApexoField(
+                  key: WK.fieldPatientPhone,
+                  placeHolder: "${txt("phone")}...",
+                  controller: TextEditingController(text: widget.patient.phone),
+                  onChanged: (value) => widget.patient.phone = value,
+                  validator: ValidationBuilder()
+                      .required()
+                      .regExp(RegExp(r'^(091|092|094)\d{7}$'),
+                          txt('phoneValidation'))
+                      .build(),
+                ),
               ),
             ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: InfoLabel(
+                label: "${txt("email")}:",
+                isHeader: true,
+                child: ApexoField(
+                  key: WK.fieldPatientEmail,
+                  placeHolder: "${txt("email")}...",
+                  controller: TextEditingController(text: widget.patient.email),
+                  onChanged: (value) => widget.patient.email = value,
+                  validator: ValidationBuilder()
+                      .regExp(RegExp(r'^[\w\.-]+@[\w\.-]+\.\w+$'),
+                          txt("emailvalidation"))
+                      .build(),
+                ),
+              ),
+            ),
+          ]),
+          InfoLabel(
+            label: "${txt("address")}:",
+            isHeader: true,
+            child: ApexoField(
+              key: WK.fieldPatientAddress,
+              controller: TextEditingController(text: widget.patient.address),
+              onChanged: (value) => widget.patient.address = value,
+              placeHolder: "${txt("address")}...",
+              validator: ValidationBuilder().required().build(),
+            ),
           ),
-        ]),
-        InfoLabel(
-          label: "${txt("address")}:",
-          isHeader: true,
-          child: CupertinoTextField(
-            key: WK.fieldPatientAddress,
-            controller: TextEditingController(text: widget.patient.address),
-            onChanged: (value) => widget.patient.address = value,
-            placeholder: "${txt("address")}...",
+          InfoLabel(
+            label: "${txt("notes")}:",
+            isHeader: true,
+            child: CupertinoTextField(
+              key: WK.fieldPatientNotes,
+              controller: TextEditingController(text: widget.patient.notes),
+              onChanged: (value) => widget.patient.notes = value,
+              maxLines: null,
+              placeholder: "${txt("notes")}...",
+            ),
           ),
-        ),
-        InfoLabel(
-          label: "${txt("notes")}:",
-          isHeader: true,
-          child: CupertinoTextField(
-            key: WK.fieldPatientNotes,
-            controller: TextEditingController(text: widget.patient.notes),
-            onChanged: (value) => widget.patient.notes = value,
-            maxLines: null,
-            placeholder: "${txt("notes")}...",
-          ),
-        ),
-        InfoLabel(
-          label: "${txt("patientTags")}:",
-          isHeader: true,
-          child: TagInputWidget(
-            key: WK.fieldPatientTags,
-            suggestions: patients.allTags.map((t) => TagInputItem(value: t, label: t)).toList(),
-            onChanged: (tags) {
-              widget.patient.tags = List<String>.from(tags.map((e) => e.value).where((e) => e != null));
-            },
-            initialValue: widget.patient.tags.map((e) => TagInputItem(value: e, label: e)).toList(),
-            strict: false,
-            limit: 9999,
-            placeholder: "${txt("patientTags")}...",
-          ),
-        )
-      ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+          InfoLabel(
+            label: "${txt("patientTags")}:",
+            isHeader: true,
+            child: TagInputWidget(
+              key: WK.fieldPatientTags,
+              suggestions: patients.allTags
+                  .map((t) => TagInputItem(value: t, label: t))
+                  .toList(),
+              onChanged: (tags) {
+                widget.patient.tags = List<String>.from(
+                    tags.map((e) => e.value).where((e) => e != null));
+              },
+              initialValue: widget.patient.tags
+                  .map((e) => TagInputItem(value: e, label: e))
+                  .toList(),
+              strict: false,
+              limit: 9999,
+              placeholder: "${txt("patientTags")}...",
+            ),
+          )
+        ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+      ),
     );
   }
 }

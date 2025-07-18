@@ -51,7 +51,7 @@ class Panel<T extends Model> {
   String? title;
   final inProgress = ObservableState(false);
   final selectedTab = ObservableState<int>(0);
-  final ObservableState<bool> hasUnsavedChanges = ObservableState(false);
+  final GlobalKey<FormState> key ;
   late String savedJson;
   late String identifier;
   final Completer<T> result = Completer<T>();
@@ -61,6 +61,7 @@ class Panel<T extends Model> {
     required this.store,
     required this.tabs,
     required this.icon,
+    required this.key ,
     this.title,
   }) {
     identifier = store.get(item.id) == null ? "new+${store.local?.name}" : item.id;

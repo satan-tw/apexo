@@ -24,10 +24,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
 void openAppointment([Appointment? appointment]) {
   final editingCopy = Appointment.fromJson(appointment?.toJson() ?? {});
-  final panel = Panel(
+  final panel = Panel(    key: _key,
+
     item: editingCopy,
     store: appointments,
     icon: FluentIcons.calendar,

@@ -355,5 +355,8 @@ class En {
     "newVersionDialogTitle": "New version available",
     "newVersionDialogContent":
         "A new version of Apexo is available. Please update to the latest version to get the best experience. Scan the QR code below to get started.",
+    "phoneValidation" : "Please add valid phone number ",
+    "emailvalidation" : "please enter a valid email",
+    "birtv" : "enter valid birthdate"
   };
 }

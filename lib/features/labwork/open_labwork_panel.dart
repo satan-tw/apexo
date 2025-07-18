@@ -11,14 +11,19 @@ import 'package:apexo/widget_keys.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/cupertino.dart';
 
+final GlobalKey<FormState> _key = GlobalKey<FormState>();
+
 void openLabwork([Labwork? labwork]) {
   final editingCopy = Labwork.fromJson(labwork?.toJson() ?? {});
 
   routes.openPanel(Panel(
+    key: _key,
     item: editingCopy,
     store: labworks,
     icon: FluentIcons.manufacturing,
-    title: labworks.get(editingCopy.id) == null ? txt("newLabwork") : editingCopy.title,
+    title: labworks.get(editingCopy.id) == null
+        ? txt("newLabwork")
+        : editingCopy.title,
     tabs: [
       PanelTab(
         title: txt("labwork"),
@@ -96,7 +101,8 @@ class _LabworkEditingState extends State<_LabworkEditing> {
           children: [
             Expanded(
               child: InfoLabel(
-                label: "${txt("priceIn")} ${globalSettings.get("currency_______").value}",
+                label:
+                    "${txt("priceIn")} ${globalSettings.get("currency_______").value}",
                 child: NumberBox(
                   key: WK.fieldLabworkPrice,
                   style: textFieldTextStyle(),
@@ -118,7 +124,8 @@ class _LabworkEditingState extends State<_LabworkEditing> {
                     widget.labwork.paid = n == true;
                   });
                 },
-                content: widget.labwork.paid ? Txt(txt("paid")) : Txt(txt("unpaid")),
+                content:
+                    widget.labwork.paid ? Txt(txt("paid")) : Txt(txt("unpaid")),
               ),
             )
           ],
@@ -148,7 +155,10 @@ class _LabworkEditingState extends State<_LabworkEditing> {
                       widget.labwork.phoneNumber = phoneNumber;
                     }
                   },
-                  items: labworks.allLabs.map((name) => AutoSuggestBoxItem<String>(value: name, label: name)).toList(),
+                  items: labworks.allLabs
+                      .map((name) =>
+                          AutoSuggestBoxItem<String>(value: name, label: name))
+                      .toList(),
                 ),
               ),
             ),
@@ -170,8 +180,12 @@ class _LabworkEditingState extends State<_LabworkEditing> {
                   onChanged: (text, reason) {
                     widget.labwork.phoneNumber = text;
                   },
-                  trailingIcon: CallIconButton(phoneNumber: widget.labwork.phoneNumber),
-                  items: labworks.allPhones.map((pn) => AutoSuggestBoxItem<String>(value: pn, label: pn)).toList(),
+                  trailingIcon:
+                      CallIconButton(phoneNumber: widget.labwork.phoneNumber),
+                  items: labworks.allPhones
+                      .map((pn) =>
+                          AutoSuggestBoxItem<String>(value: pn, label: pn))
+                      .toList(),
                 ),
               ),
             ),

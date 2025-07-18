@@ -344,7 +344,13 @@ class Ar implements En {
     "firstLaunchDialogTitle": "مرحبًا بك في Apexo",
     "firstLaunchDialogContent": "لقد قمت بتثبيت Apexo بنجاح. ومع ذلك، لتحسين التجربة وللاستخدام العملي، ستحتاج إلى إعداد بعض الأمور. امسح رمز QR أدناه للبدء.",
     "newVersionDialogTitle": "نسخة جديدة متاحة",
-    "newVersionDialogContent": "نسخة جديدة من Apexo متاحة. يرجى التحديث إلى آخر إصدار للحصول على أفضل تجربة. امسح رمز QR أدناه للبدء."
+    "newVersionDialogContent": "نسخة جديدة من Apexo متاحة. يرجى التحديث إلى آخر إصدار للحصول على أفضل تجربة. امسح رمز QR أدناه للبدء.",
+  "phoneValidation" : "يرحى ادخال رقم هاتف صحيح ",
+    "emailvalidation" : "يرحى ادخال ايميل صحيح",
+    "birtv" : "يرحى ادخال ميلاد صحيح"
+
+
+
   };
 
 }

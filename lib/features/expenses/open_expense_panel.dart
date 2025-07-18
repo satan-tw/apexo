@@ -10,15 +10,21 @@ import 'package:apexo/features/settings/settings_stores.dart';
 import 'package:apexo/widget_keys.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:form_validator/form_validator.dart';
+
+final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
 void openExpense([Expense? expense]) {
   final editingCopy = Expense.fromJson(expense?.toJson() ?? {});
 
   routes.openPanel(Panel(
+    key: _key,
     item: editingCopy,
     store: expenses,
     icon: FluentIcons.receipt_processing,
-    title: expenses.get(editingCopy.id) == null ? txt("newReceipt") : editingCopy.title,
+    title: expenses.get(editingCopy.id) == null
+        ? txt("newReceipt")
+        : editingCopy.title,
     tabs: [
       PanelTab(
         title: txt("receipt"),
@@ -51,155 +57,196 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        InfoLabel(
-          label: "${txt("date")}:",
-          child: DateTimePicker(
-            key: WK.fieldReceiptDate,
-            initValue: widget.expense.date,
-            onChange: (d) => widget.expense.date = d,
-            buttonText: txt("changeDate"),
+    return Form(
+      key: _key,
+      child: Column(
+        children: [
+          InfoLabel(
+            label: "${txt("date")}:",
+            child: DateTimePicker(
+              key: WK.fieldReceiptDate,
+              initValue: widget.expense.date,
+              onChange: (d) => widget.expense.date = d,
+              buttonText: txt("changeDate"),
+            ),
           ),
-        ),
-        InfoLabel(
-          label: "${txt("specificForDoctors")}:",
-          child: OperatorsPicker(
-              value: widget.expense.operatorsIDs,
-              onChanged: (ids) {
-                widget.expense.operatorsIDs = ids;
-              }),
-        ),
-        InfoLabel(
-          label: "${txt("receiptItems")}:",
-          isHeader: true,
-          child: TagInputWidget(
-            key: WK.fieldReceiptItems,
-            suggestions: expenses.allItems.map((t) => TagInputItem(value: t, label: t)).toList(),
-            onChanged: (items) {
-              widget.expense.items = List<String>.from(items.map((e) => e.value).where((e) => e != null));
-            },
-            initialValue: widget.expense.items.map((e) => TagInputItem(value: e, label: e)).toList(),
-            strict: false,
-            limit: 9999,
-            placeholder: "${txt("receiptItems")}...",
-          ),
-        ),
-        InfoLabel(
-          label: "${txt("receiptNotes")}:",
-          child: CupertinoTextField(
-            key: WK.fieldReceiptNotes,
-            controller: TextEditingController(text: widget.expense.note),
-            placeholder: "${txt("receiptNotes")}...",
-            onChanged: (val) {
-              widget.expense.note = val;
-            },
-            maxLines: null,
-          ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: InfoLabel(
-                label: "${txt("amountIn")} ${globalSettings.get("currency_______").value}",
-                child: NumberBox(
-                  key: WK.fieldReceiptAmount,
-                  style: textFieldTextStyle(),
-                  clearButton: false,
-                  mode: SpinButtonPlacementMode.inline,
-                  value: widget.expense.amount,
-                  onChanged: (n) => widget.expense.amount = n ?? 0.0,
+          InfoLabel(
+            label: "${txt("specificForDoctors")}:",
+            child: FormField<List<String>>(
+              validator: (value) {
+                return value?.isEmpty ?? true ? txt('birtv') : null;
+              },
+              builder: (field) => Container(
+                decoration: field.hasError
+                    ? BoxDecoration(border: Border.all(color: Colors.red))
+                    : null,
+                child: Column(
+                  children: [
+                    OperatorsPicker(
+                        value: widget.expense.operatorsIDs,
+                        onChanged: (ids) {
+                          widget.expense.operatorsIDs = ids;
+                          field.didChange(ids);
+                        }),
+                    if (field.hasError)
+                      Text(
+                        field.errorText!,
+                        style: TextStyle(color: Colors.red),
+                      )
+                  ],
                 ),
               ),
             ),
-            const SizedBox(width: 15),
-            Padding(
-              padding: const EdgeInsets.only(top: 22.5),
-              child: Checkbox(
-                key: WK.fieldReceiptPaidToggle,
-                checked: widget.expense.paid,
-                onChanged: (n) {
-                  setState(() {
-                    widget.expense.paid = n == true;
-                  });
-                },
-                content: widget.expense.paid ? Txt(txt("paid")) : Txt(txt("due")),
-              ),
-            )
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: InfoLabel(
-                label: "${txt("issuer")}:",
-                child: AutoSuggestBox<String>(
-                  key: WK.fieldReceiptIssuer,
-                  style: textFieldTextStyle(),
-                  decoration: WidgetStatePropertyAll(textFieldDecoration()),
-                  clearButtonEnabled: false,
-                  placeholder: "${txt("issuer")}...",
-                  controller: issuerController,
-                  noResultsFoundBuilder: (context) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Txt(txt("noSuggestions")),
+          ),
+          InfoLabel(
+            label: "${txt("receiptItems")}:",
+            isHeader: true,
+            child: TagInputWidget(
+              key: WK.fieldReceiptItems,
+              suggestions: expenses.allItems
+                  .map((t) => TagInputItem(value: t, label: t))
+                  .toList(),
+              onChanged: (items) {
+                widget.expense.items = List<String>.from(
+                    items.map((e) => e.value).where((e) => e != null));
+              },
+              initialValue: widget.expense.items
+                  .map((e) => TagInputItem(value: e, label: e))
+                  .toList(),
+              strict: false,
+              limit: 9999,
+              placeholder: "${txt("receiptItems")}...",
+            ),
+          ),
+          InfoLabel(
+            label: "${txt("receiptNotes")}:",
+            child: CupertinoTextField(
+              key: WK.fieldReceiptNotes,
+              controller: TextEditingController(text: widget.expense.note),
+              placeholder: "${txt("receiptNotes")}...",
+              onChanged: (val) {
+                widget.expense.note = val;
+              },
+              maxLines: null,
+            ),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: InfoLabel(
+                  label:
+                      "${txt("amountIn")} ${globalSettings.get("currency_______").value}",
+                  child: NumberBox(
+                    key: WK.fieldReceiptAmount,
+                    style: textFieldTextStyle(),
+                    clearButton: false,
+                    mode: SpinButtonPlacementMode.inline,
+                    value: widget.expense.amount,
+                    onChanged: (n) => widget.expense.amount = n ?? 0.0,
                   ),
-                  onChanged: (text, reason) {
-                    widget.expense.issuer = text;
-                    String? phoneNumber = expenses.getPhoneNumber(text);
-                    if (phoneNumber != null) {
-                      issuerPhoneController.text = phoneNumber;
-                      widget.expense.phoneNumber = phoneNumber;
-                    }
-                  },
-                  items:
-                      expenses.allIssuers.map((name) => AutoSuggestBoxItem<String>(value: name, label: name)).toList(),
                 ),
               ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: InfoLabel(
-                label: "${txt("phone")}:",
-                child: AutoSuggestBox<String>(
-                  key: WK.fieldLabworkPhoneNumber,
-                  style: textFieldTextStyle(),
-                  decoration: WidgetStatePropertyAll(textFieldDecoration()),
-                  clearButtonEnabled: false,
-                  placeholder: "${txt("phone")}...",
-                  controller: issuerPhoneController,
-                  noResultsFoundBuilder: (context) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Txt(txt("noSuggestions")),
-                  ),
-                  onChanged: (text, reason) {
-                    widget.expense.phoneNumber = text;
+              const SizedBox(width: 15),
+              Padding(
+                padding: const EdgeInsets.only(top: 22.5),
+                child: Checkbox(
+                  key: WK.fieldReceiptPaidToggle,
+                  checked: widget.expense.paid,
+                  onChanged: (n) {
+                    setState(() {
+                      widget.expense.paid = n == true;
+                    });
                   },
-                  trailingIcon: CallIconButton(phoneNumber: widget.expense.phoneNumber),
-                  items: expenses.allPhones.map((pn) => AutoSuggestBoxItem<String>(value: pn, label: pn)).toList(),
+                  content:
+                      widget.expense.paid ? Txt(txt("paid")) : Txt(txt("due")),
                 ),
-              ),
-            ),
-          ],
-        ),
-        InfoLabel(
-          label: "${txt("receiptTags")}:",
-          isHeader: true,
-          child: TagInputWidget(
-            key: WK.fieldReceiptTags,
-            suggestions: expenses.allTags.map((t) => TagInputItem(value: t, label: t)).toList(),
-            onChanged: (tags) {
-              widget.expense.tags = List<String>.from(tags.map((e) => e.value).where((e) => e != null));
-            },
-            initialValue: widget.expense.tags.map((e) => TagInputItem(value: e, label: e)).toList(),
-            strict: false,
-            limit: 9999,
-            placeholder: "${txt("receiptTags")}...",
+              )
+            ],
           ),
-        ),
-      ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: InfoLabel(
+                  label: "${txt("issuer")}:",
+                  child: AutoSuggestBox<String>(
+                    key: WK.fieldReceiptIssuer,
+                    style: textFieldTextStyle(),
+                    decoration: WidgetStatePropertyAll(textFieldDecoration()),
+                    clearButtonEnabled: false,
+                    placeholder: "${txt("issuer")}...",
+                    controller: issuerController,
+                    noResultsFoundBuilder: (context) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Txt(txt("noSuggestions")),
+                    ),
+                    onChanged: (text, reason) {
+                      widget.expense.issuer = text;
+                      String? phoneNumber = expenses.getPhoneNumber(text);
+                      if (phoneNumber != null) {
+                        issuerPhoneController.text = phoneNumber;
+                        widget.expense.phoneNumber = phoneNumber;
+                      }
+                    },
+                    items: expenses.allIssuers
+                        .map((name) => AutoSuggestBoxItem<String>(
+                            value: name, label: name))
+                        .toList(),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 15),
+              Expanded(
+                child: InfoLabel(
+                  label: "${txt("phone")}:",
+                  child: AutoSuggestBox<String>(
+                    key: WK.fieldLabworkPhoneNumber,
+                    style: textFieldTextStyle(),
+                    decoration: WidgetStatePropertyAll(textFieldDecoration()),
+                    clearButtonEnabled: false,
+                    placeholder: "${txt("phone")}...",
+                    controller: issuerPhoneController,
+                    noResultsFoundBuilder: (context) => Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Txt(txt("noSuggestions")),
+                    ),
+                    onChanged: (text, reason) {
+                      widget.expense.phoneNumber = text;
+                    },
+                    trailingIcon:
+                        CallIconButton(phoneNumber: widget.expense.phoneNumber),
+                    items: expenses.allPhones
+                        .map((pn) =>
+                            AutoSuggestBoxItem<String>(value: pn, label: pn))
+                        .toList(),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          InfoLabel(
+            label: "${txt("receiptTags")}:",
+            isHeader: true,
+            child: TagInputWidget(
+              key: WK.fieldReceiptTags,
+              suggestions: expenses.allTags
+                  .map((t) => TagInputItem(value: t, label: t))
+                  .toList(),
+              onChanged: (tags) {
+                widget.expense.tags = List<String>.from(
+                    tags.map((e) => e.value).where((e) => e != null));
+              },
+              initialValue: widget.expense.tags
+                  .map((e) => TagInputItem(value: e, label: e))
+                  .toList(),
+              strict: false,
+              limit: 9999,
+              placeholder: "${txt("receiptTags")}...",
+            ),
+          ),
+        ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+      ),
     );
   }
 }
