@@ -10,6 +10,7 @@ import 'package:apexo/features/settings/settings_stores.dart';
 import 'package:apexo/widget_keys.dart';
 import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:form_validator/form_validator.dart';
 
 final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
@@ -56,142 +57,236 @@ class _LabworkEditingState extends State<_LabworkEditing> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InfoLabel(
-          label: "${txt("date")}:",
-          child: DateTimePicker(
-            key: WK.fieldLabworkDate,
-            initValue: widget.labwork.date,
-            onChange: (d) => widget.labwork.date = d,
-            buttonText: txt("changeDate"),
+    return Form(
+      key: _key,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InfoLabel(
+            label: "${txt("date")}:",
+            child: DateTimePicker(
+              key: WK.fieldLabworkDate,
+              initValue: widget.labwork.date,
+              onChange: (d) => widget.labwork.date = d,
+              buttonText: txt("changeDate"),
+            ),
           ),
-        ),
-        InfoLabel(
-          label: "${txt("patient")}:",
-          child: PatientPicker(
-              value: widget.labwork.patientID,
-              onChanged: (id) {
-                widget.labwork.patientID = id;
-              }),
-        ),
-        InfoLabel(
-          label: "${txt("doctors")}:",
-          child: OperatorsPicker(
-              value: widget.labwork.operatorsIDs,
-              onChanged: (ids) {
-                widget.labwork.operatorsIDs = ids;
-              }),
-        ),
-        InfoLabel(
-          label: "${txt("orderNotes")}:",
-          child: CupertinoTextField(
-            key: WK.fieldLabworkOrderNotes,
-            controller: TextEditingController(text: widget.labwork.note),
-            placeholder: "${txt("orderNotes")}...",
-            onChanged: (val) {
-              widget.labwork.note = val;
-            },
-            maxLines: null,
+          InfoLabel(
+            label: "${txt("patient")}:",
+            child: FormField<String>(
+                validator: ValidationBuilder().required().build(),
+                builder: (field) {
+                  return Container(
+                      decoration: field.hasError
+                          ? BoxDecoration(border: Border.all(color: Colors.red))
+                          : null,
+                      child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            PatientPicker(
+                                value: widget.labwork.patientID,
+                                onChanged: (id) {
+                                  widget.labwork.patientID = id;
+                                  field.didChange(widget.labwork.patientID);
+                                }),
+                            if (field.hasError)
+                              Text(
+                                field.errorText!,
+                                style: TextStyle(color: Colors.red),
+                              )
+                          ]));
+                }),
           ),
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: InfoLabel(
-                label:
-                    "${txt("priceIn")} ${globalSettings.get("currency_______").value}",
-                child: NumberBox(
-                  key: WK.fieldLabworkPrice,
-                  style: textFieldTextStyle(),
-                  clearButton: false,
-                  mode: SpinButtonPlacementMode.inline,
-                  value: widget.labwork.price,
-                  onChanged: (n) => widget.labwork.price = n ?? 0.0,
-                ),
-              ),
+          InfoLabel(
+            label: "${txt("doctors")}:",
+            child: FormField<List<String>>(validator: (value) {
+              return value?.isEmpty ?? true ? txt('birtv') : null;
+            }, builder: (field) {
+              return Container(
+                  decoration: field.hasError
+                      ? BoxDecoration(border: Border.all(color: Colors.red))
+                      : null,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        OperatorsPicker(
+                            value: widget.labwork.operatorsIDs,
+                            onChanged: (ids) {
+                              widget.labwork.operatorsIDs = ids;
+                              field.didChange(widget.labwork.operatorsIDs);
+                            }),
+                        if (field.hasError)
+                          Text(
+                            field.errorText!,
+                            style: TextStyle(color: Colors.red),
+                          )
+                      ]));
+            }),
+          ),
+          InfoLabel(
+            label: "${txt("orderNotes")}:",
+            child: CupertinoTextField(
+              key: WK.fieldLabworkOrderNotes,
+              controller: TextEditingController(text: widget.labwork.note),
+              placeholder: "${txt("orderNotes")}...",
+              onChanged: (val) {
+                widget.labwork.note = val;
+              },
+              maxLines: null,
             ),
-            const SizedBox(width: 15),
-            Padding(
-              padding: const EdgeInsets.only(top: 22.5),
-              child: Checkbox(
-                key: WK.fieldLabworkPaidToggle,
-                checked: widget.labwork.paid,
-                onChanged: (n) {
-                  setState(() {
-                    widget.labwork.paid = n == true;
-                  });
-                },
-                content:
-                    widget.labwork.paid ? Txt(txt("paid")) : Txt(txt("unpaid")),
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: InfoLabel(
+                    label:
+                        "${txt("priceIn")} ${globalSettings.get("currency_______").value}",
+                    child: FormField<String>(
+                        validator: ValidationBuilder().required().build(),
+                        builder: (field) => Container(
+                            decoration: field.hasError
+                                ? BoxDecoration(
+                                    border: Border.all(color: Colors.red))
+                                : null,
+                            child: Column(children: [
+                              NumberBox(
+                                key: WK.fieldLabworkPrice,
+                                style: textFieldTextStyle(),
+                                clearButton: false,
+                                mode: SpinButtonPlacementMode.inline,
+                                value: widget.labwork.price,
+                                onChanged: (n) {
+                                  widget.labwork.price = n ?? 0.0;
+                                  field.didChange((widget.labwork.price =
+                                          n ?? 0.0)
+                                      .toString());
+                                },
+                              ),
+                              if (field.hasError)
+                                Text(
+                                  field.errorText!,
+                                  style: TextStyle(color: Colors.red),
+                                )
+                            ])))),
               ),
-            )
-          ],
-        ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: InfoLabel(
-                label: "${txt("laboratory")}:",
-                child: AutoSuggestBox<String>(
-                  key: WK.fieldLabworkLabName,
-                  style: textFieldTextStyle(),
-                  decoration: WidgetStatePropertyAll(textFieldDecoration()),
-                  clearButtonEnabled: false,
-                  placeholder: "${txt("laboratory")}...",
-                  controller: labNameController,
-                  noResultsFoundBuilder: (context) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Txt(txt("noSuggestions")),
-                  ),
-                  onChanged: (text, reason) {
-                    widget.labwork.lab = text;
-                    String? phoneNumber = labworks.getPhoneNumber(text);
-                    if (phoneNumber != null) {
-                      labPhoneController.text = phoneNumber;
-                      widget.labwork.phoneNumber = phoneNumber;
-                    }
+              const SizedBox(width: 15),
+              Padding(
+                padding: const EdgeInsets.only(top: 22.5),
+                child: Checkbox(
+                  key: WK.fieldLabworkPaidToggle,
+                  checked: widget.labwork.paid,
+                  onChanged: (n) {
+                    setState(() {
+                      widget.labwork.paid = n == true;
+                    });
                   },
-                  items: labworks.allLabs
-                      .map((name) =>
-                          AutoSuggestBoxItem<String>(value: name, label: name))
-                      .toList(),
+                  content: widget.labwork.paid
+                      ? Txt(txt("paid"))
+                      : Txt(txt("unpaid")),
                 ),
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: InfoLabel(
+                    label: "${txt("laboratory")}:",
+                    child: FormField<String>(
+                        validator: ValidationBuilder().required().build(),
+                        builder: (field) => Container(
+                            decoration: field.hasError
+                                ? BoxDecoration(
+                                    border: Border.all(color: Colors.red))
+                                : null,
+                            child: Column(children: [
+                              AutoSuggestBox<String>(
+                                key: WK.fieldLabworkLabName,
+                                style: textFieldTextStyle(),
+                                decoration: WidgetStatePropertyAll(
+                                    textFieldDecoration()),
+                                clearButtonEnabled: false,
+                                placeholder: "${txt("laboratory")}...",
+                                controller: labNameController,
+                                noResultsFoundBuilder: (context) => Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Txt(txt("noSuggestions")),
+                                ),
+                                onChanged: (text, reason) {
+                                  widget.labwork.lab = text;
+                                  String? phoneNumber =
+                                      labworks.getPhoneNumber(text);
+                                  if (phoneNumber != null) {
+                                    labPhoneController.text = phoneNumber;
+                                    widget.labwork.phoneNumber = phoneNumber;
+                                  }
+
+                                  field.didChange(widget.labwork.lab);
+                                },
+                                items: labworks.allLabs
+                                    .map((name) => AutoSuggestBoxItem<String>(
+                                        value: name, label: name))
+                                    .toList(),
+                              ),
+                              if (field.hasError)
+                                Text(
+                                  field.errorText!,
+                                  style: TextStyle(color: Colors.red),
+                                )
+                            ])))),
               ),
-            ),
-            const SizedBox(width: 15),
-            Expanded(
-              child: InfoLabel(
-                label: "${txt("phone")}:",
-                child: AutoSuggestBox<String>(
-                  key: WK.fieldLabworkPhoneNumber,
-                  style: textFieldTextStyle(),
-                  decoration: WidgetStatePropertyAll(textFieldDecoration()),
-                  clearButtonEnabled: false,
-                  placeholder: "${txt("phone")}...",
-                  controller: labPhoneController,
-                  noResultsFoundBuilder: (context) => Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Txt(txt("noSuggestions")),
+              const SizedBox(width: 15),
+              Expanded(
+                child: InfoLabel(
+                  label: "${txt("phone")}:",
+                  child: FormField<String>(
+                    validator: ValidationBuilder().required().build(),
+                    builder: (field) => Container(
+                      decoration: field.hasError
+                          ? BoxDecoration(border: Border.all(color: Colors.red))
+                          : null,
+                      child: Column(
+                        children: [
+                          AutoSuggestBox<String>(
+                            key: WK.fieldLabworkPhoneNumber,
+                            style: textFieldTextStyle(),
+                            decoration:
+                                WidgetStatePropertyAll(textFieldDecoration()),
+                            clearButtonEnabled: false,
+                            placeholder: "${txt("phone")}...",
+                            controller: labPhoneController,
+                            noResultsFoundBuilder: (context) => Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Txt(txt("noSuggestions")),
+                            ),
+                            onChanged: (text, reason) {
+                              widget.labwork.phoneNumber = text;
+                              field.didChange(text);
+                            },
+                            trailingIcon: CallIconButton(
+                                phoneNumber: widget.labwork.phoneNumber),
+                            items: labworks.allPhones
+                                .map((pn) => AutoSuggestBoxItem<String>(
+                                    value: pn, label: pn))
+                                .toList(),
+                          ),
+                          if (field.hasError)
+                            Text(
+                              field.errorText!,
+                              style: TextStyle(color: Colors.red),
+                            )
+                        ],
+                      ),
+                    ),
                   ),
-                  onChanged: (text, reason) {
-                    widget.labwork.phoneNumber = text;
-                  },
-                  trailingIcon:
-                      CallIconButton(phoneNumber: widget.labwork.phoneNumber),
-                  items: labworks.allPhones
-                      .map((pn) =>
-                          AutoSuggestBoxItem<String>(value: pn, label: pn))
-                      .toList(),
                 ),
               ),
-            ),
-          ],
-        )
-      ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+            ],
+          )
+        ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+      ),
     );
   }
 }

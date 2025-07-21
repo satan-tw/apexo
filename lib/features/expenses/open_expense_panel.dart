@@ -1,4 +1,5 @@
 import 'package:apexo/app/routes.dart';
+import 'package:apexo/common_widgets/apexo_field.dart';
 import 'package:apexo/common_widgets/operators_picker.dart';
 import 'package:apexo/services/localization/locale.dart';
 import 'package:apexo/common_widgets/call_button.dart';
@@ -81,6 +82,7 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
                     ? BoxDecoration(border: Border.all(color: Colors.red))
                     : null,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     OperatorsPicker(
                         value: widget.expense.operatorsIDs,
@@ -101,22 +103,42 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
           InfoLabel(
             label: "${txt("receiptItems")}:",
             isHeader: true,
-            child: TagInputWidget(
-              key: WK.fieldReceiptItems,
-              suggestions: expenses.allItems
-                  .map((t) => TagInputItem(value: t, label: t))
-                  .toList(),
-              onChanged: (items) {
-                widget.expense.items = List<String>.from(
-                    items.map((e) => e.value).where((e) => e != null));
-              },
-              initialValue: widget.expense.items
-                  .map((e) => TagInputItem(value: e, label: e))
-                  .toList(),
-              strict: false,
-              limit: 9999,
-              placeholder: "${txt("receiptItems")}...",
-            ),
+            child: FormField<List<String>>(validator: (value) {
+              return value?.isEmpty ?? true ? txt('birtv') : null;
+            }, builder: (field) {
+              return Container(
+                decoration: field.hasError
+                    ? BoxDecoration(border: Border.all(color: Colors.red))
+                    : null,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TagInputWidget(
+                      key: WK.fieldReceiptItems,
+                      suggestions: expenses.allItems
+                          .map((t) => TagInputItem(value: t, label: t))
+                          .toList(),
+                      onChanged: (items) {
+                        widget.expense.items = List<String>.from(
+                            items.map((e) => e.value).where((e) => e != null));
+                        field.didChange(widget.expense.items);
+                      },
+                      initialValue: widget.expense.items
+                          .map((e) => TagInputItem(value: e, label: e))
+                          .toList(),
+                      strict: false,
+                      limit: 9999,
+                      placeholder: "${txt("receiptItems")}...",
+                    ),
+                    if (field.hasError)
+                      Text(
+                        field.errorText!,
+                        style: TextStyle(color: Colors.red),
+                      )
+                  ],
+                ),
+              );
+            }),
           ),
           InfoLabel(
             label: "${txt("receiptNotes")}:",
@@ -137,13 +159,13 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
                 child: InfoLabel(
                   label:
                       "${txt("amountIn")} ${globalSettings.get("currency_______").value}",
-                  child: NumberBox(
+                  child: ApexoField(
                     key: WK.fieldReceiptAmount,
-                    style: textFieldTextStyle(),
-                    clearButton: false,
-                    mode: SpinButtonPlacementMode.inline,
-                    value: widget.expense.amount,
-                    onChanged: (n) => widget.expense.amount = n ?? 0.0,
+                    placeHolder: "${txt("amountIn")} LYD ",
+                    controller: TextEditingController(
+                        text: widget.expense.amount.toString()),
+                    validator: ValidationBuilder().required().build(),
+                    onChanged: (n) => widget.expense.amount,
                   ),
                 ),
               ),
@@ -170,29 +192,48 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
               Expanded(
                 child: InfoLabel(
                   label: "${txt("issuer")}:",
-                  child: AutoSuggestBox<String>(
-                    key: WK.fieldReceiptIssuer,
-                    style: textFieldTextStyle(),
-                    decoration: WidgetStatePropertyAll(textFieldDecoration()),
-                    clearButtonEnabled: false,
-                    placeholder: "${txt("issuer")}...",
-                    controller: issuerController,
-                    noResultsFoundBuilder: (context) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Txt(txt("noSuggestions")),
+                  child: FormField<String>(
+                    validator: ValidationBuilder().required().build(),
+                    builder: (field) => Container(
+                      decoration: field.hasError
+                          ? BoxDecoration(border: Border.all(color: Colors.red))
+                          : null,
+                      child: Column(
+                        children: [
+                          AutoSuggestBox<String>(
+                            key: WK.fieldReceiptIssuer,
+                            style: textFieldTextStyle(),
+                            decoration:
+                                WidgetStatePropertyAll(textFieldDecoration()),
+                            clearButtonEnabled: false,
+                            placeholder: "${txt("issuer")}...",
+                            controller: issuerController,
+                            noResultsFoundBuilder: (context) => Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Txt(txt("noSuggestions")),
+                            ),
+                            onChanged: (text, reason) {
+                              widget.expense.issuer = text;
+                              String? phoneNumber =
+                                  expenses.getPhoneNumber(text);
+                              if (phoneNumber != null) {
+                                issuerPhoneController.text = phoneNumber;
+                                widget.expense.phoneNumber = phoneNumber;
+                              }
+                            },
+                            items: expenses.allIssuers
+                                .map((name) => AutoSuggestBoxItem<String>(
+                                    value: name, label: name))
+                                .toList(),
+                          ),
+                          if (field.hasError)
+                            Text(
+                              field.errorText!,
+                              style: TextStyle(color: Colors.red),
+                            )
+                        ],
+                      ),
                     ),
-                    onChanged: (text, reason) {
-                      widget.expense.issuer = text;
-                      String? phoneNumber = expenses.getPhoneNumber(text);
-                      if (phoneNumber != null) {
-                        issuerPhoneController.text = phoneNumber;
-                        widget.expense.phoneNumber = phoneNumber;
-                      }
-                    },
-                    items: expenses.allIssuers
-                        .map((name) => AutoSuggestBoxItem<String>(
-                            value: name, label: name))
-                        .toList(),
                   ),
                 ),
               ),
@@ -200,26 +241,45 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
               Expanded(
                 child: InfoLabel(
                   label: "${txt("phone")}:",
-                  child: AutoSuggestBox<String>(
-                    key: WK.fieldLabworkPhoneNumber,
-                    style: textFieldTextStyle(),
-                    decoration: WidgetStatePropertyAll(textFieldDecoration()),
-                    clearButtonEnabled: false,
-                    placeholder: "${txt("phone")}...",
-                    controller: issuerPhoneController,
-                    noResultsFoundBuilder: (context) => Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Txt(txt("noSuggestions")),
+                  child: FormField<String>(
+                    validator: ValidationBuilder().required().build(),
+                    builder: (field) => Container(
+                      decoration: field.hasError
+                          ? BoxDecoration(border: Border.all(color: Colors.red))
+                          : null,
+                      child: Column(
+                        children: [
+                          AutoSuggestBox<String>(
+                            key: WK.fieldLabworkPhoneNumber,
+                            style: textFieldTextStyle(),
+                            decoration:
+                                WidgetStatePropertyAll(textFieldDecoration()),
+                            clearButtonEnabled: false,
+                            placeholder: "${txt("phone")}...",
+                            controller: issuerPhoneController,
+                            noResultsFoundBuilder: (context) => Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Txt(txt("noSuggestions")),
+                            ),
+                            onChanged: (text, reason) {
+                              widget.expense.phoneNumber = text;
+                              field.didChange(text);
+                            },
+                            trailingIcon: CallIconButton(
+                                phoneNumber: widget.expense.phoneNumber),
+                            items: expenses.allPhones
+                                .map((pn) => AutoSuggestBoxItem<String>(
+                                    value: pn, label: pn))
+                                .toList(),
+                          ),
+                          if (field.hasError)
+                            Text(
+                              field.errorText!,
+                              style: TextStyle(color: Colors.red),
+                            )
+                        ],
+                      ),
                     ),
-                    onChanged: (text, reason) {
-                      widget.expense.phoneNumber = text;
-                    },
-                    trailingIcon:
-                        CallIconButton(phoneNumber: widget.expense.phoneNumber),
-                    items: expenses.allPhones
-                        .map((pn) =>
-                            AutoSuggestBoxItem<String>(value: pn, label: pn))
-                        .toList(),
                   ),
                 ),
               ),
@@ -228,21 +288,42 @@ class _ReceiptEditingState extends State<_ReceiptEditing> {
           InfoLabel(
             label: "${txt("receiptTags")}:",
             isHeader: true,
-            child: TagInputWidget(
-              key: WK.fieldReceiptTags,
-              suggestions: expenses.allTags
-                  .map((t) => TagInputItem(value: t, label: t))
-                  .toList(),
-              onChanged: (tags) {
-                widget.expense.tags = List<String>.from(
-                    tags.map((e) => e.value).where((e) => e != null));
+            child: FormField<List<String>>(
+              validator: (value) {
+                return value?.isEmpty ?? true ? txt('birtv') : null;
               },
-              initialValue: widget.expense.tags
-                  .map((e) => TagInputItem(value: e, label: e))
-                  .toList(),
-              strict: false,
-              limit: 9999,
-              placeholder: "${txt("receiptTags")}...",
+              builder: (field) => Container(
+                decoration: field.hasError
+                    ? BoxDecoration(border: Border.all(color: Colors.red))
+                    : null,
+                child: Column(
+                  children: [
+                    TagInputWidget(
+                      key: WK.fieldReceiptTags,
+                      suggestions: expenses.allTags
+                          .map((t) => TagInputItem(value: t, label: t))
+                          .toList(),
+                      onChanged: (tags) {
+                        widget.expense.tags = List<String>.from(
+                            tags.map((e) => e.value).where((e) => e != null));
+
+                        field.didChange(widget.expense.tags);
+                      },
+                      initialValue: widget.expense.tags
+                          .map((e) => TagInputItem(value: e, label: e))
+                          .toList(),
+                      strict: false,
+                      limit: 9999,
+                      placeholder: "${txt("receiptTags")}...",
+                    ),
+                    if (field.hasError)
+                      Text(
+                        field.errorText!,
+                        style: TextStyle(color: Colors.red),
+                      )
+                  ],
+                ),
+              ),
             ),
           ),
         ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),

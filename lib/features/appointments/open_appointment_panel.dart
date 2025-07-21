@@ -23,17 +23,21 @@ import 'package:fluent_ui/fluent_ui.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:form_validator/form_validator.dart';
 import 'package:image_picker/image_picker.dart';
+
 final GlobalKey<FormState> _key = GlobalKey<FormState>();
 
 void openAppointment([Appointment? appointment]) {
   final editingCopy = Appointment.fromJson(appointment?.toJson() ?? {});
-  final panel = Panel(    key: _key,
-
+  final panel = Panel(
+    key: _key,
     item: editingCopy,
     store: appointments,
     icon: FluentIcons.calendar,
-    title: appointments.get(editingCopy.id) == null ? txt("addAppointment") : editingCopy.title,
+    title: appointments.get(editingCopy.id) == null
+        ? txt("addAppointment")
+        : editingCopy.title,
     tabs: [],
   );
 
@@ -53,7 +57,8 @@ void openAppointment([Appointment? appointment]) {
       icon: FluentIcons.camera,
       body: _AppointmentGallery(panel),
       onlyIfSaved: true,
-      footer: kIsWeb ? null : _AppointmentGalleryFooter(panel), // TODO: image upload isn't supported on web
+      footer: kIsWeb ? null : _AppointmentGalleryFooter(panel),
+      // TODO: image upload isn't supported on web
       padding: 0,
     ),
   ];
@@ -63,10 +68,12 @@ void openAppointment([Appointment? appointment]) {
 
 class _AppointmentGalleryFooter extends StatefulWidget {
   final Panel<Appointment> panel;
+
   const _AppointmentGalleryFooter(this.panel);
 
   @override
-  State<_AppointmentGalleryFooter> createState() => _AppointmentGalleryFooterState();
+  State<_AppointmentGalleryFooter> createState() =>
+      _AppointmentGalleryFooterState();
 }
 
 class _AppointmentGalleryFooterState extends State<_AppointmentGalleryFooter> {
@@ -105,15 +112,18 @@ class _AppointmentGalleryFooterState extends State<_AppointmentGalleryFooter> {
                   ],
                 ),
                 onPressed: () async {
-                  final XFile? res = await ImagePicker().pickImage(source: ImageSource.camera);
+                  final XFile? res =
+                      await ImagePicker().pickImage(source: ImageSource.camera);
                   if (res == null) return;
                   widget.panel.inProgress(true);
                   try {
-                    final imgName = await handleNewImage(rowID: widget.panel.item.id, targetPath: res.path);
+                    final imgName = await handleNewImage(
+                        rowID: widget.panel.item.id, targetPath: res.path);
                     if (widget.panel.item.imgs.contains(imgName) == false) {
                       widget.panel.item.imgs.add(imgName);
                       appointments.set(widget.panel.item);
-                      widget.panel.savedJson = jsonEncode(widget.panel.item.toJson());
+                      widget.panel.savedJson =
+                          jsonEncode(widget.panel.item.toJson());
                     }
                   } catch (e, s) {
                     logger("Error during uploading camera capture: $e", s);
@@ -131,15 +141,18 @@ class _AppointmentGalleryFooterState extends State<_AppointmentGalleryFooter> {
                 ],
               ),
               onPressed: () async {
-                List<XFile> res = await ImagePicker().pickMultiImage(limit: 50 - widget.panel.item.imgs.length);
+                List<XFile> res = await ImagePicker()
+                    .pickMultiImage(limit: 50 - widget.panel.item.imgs.length);
                 widget.panel.inProgress(true);
                 try {
                   for (var img in res) {
-                    final imgName = await handleNewImage(rowID: widget.panel.item.id, targetPath: img.path);
+                    final imgName = await handleNewImage(
+                        rowID: widget.panel.item.id, targetPath: img.path);
                     if (widget.panel.item.imgs.contains(imgName) == false) {
                       widget.panel.item.imgs.add(imgName);
                       appointments.set(widget.panel.item);
-                      widget.panel.savedJson = jsonEncode(widget.panel.item.toJson());
+                      widget.panel.savedJson =
+                          jsonEncode(widget.panel.item.toJson());
                       widget.panel.selectedTab(widget.panel.selectedTab());
                     }
                   }
@@ -159,6 +172,7 @@ class _AppointmentGalleryFooterState extends State<_AppointmentGalleryFooter> {
 
 class _AppointmentGallery extends StatefulWidget {
   final Panel<Appointment> panel;
+
   const _AppointmentGallery(this.panel);
 
   @override
@@ -172,7 +186,10 @@ class _AppointmentGalleryState extends State<_AppointmentGallery> {
         stream: widget.panel.selectedTab.stream,
         builder: (context, _) {
           return widget.panel.item.imgs.isEmpty
-              ? Center(child: InfoBar(title: Txt(txt("emptyGallery")), content: Txt(txt("noPhotos"))))
+              ? Center(
+                  child: InfoBar(
+                      title: Txt(txt("emptyGallery")),
+                      content: Txt(txt("noPhotos"))))
               : StreamBuilder(
                   stream: widget.panel.inProgress.stream,
                   builder: (context, snapshot) {
@@ -183,10 +200,12 @@ class _AppointmentGalleryState extends State<_AppointmentGallery> {
                       onPressDelete: (img) async {
                         widget.panel.inProgress(true);
                         try {
-                          await appointments.deleteImg(widget.panel.item.id, img);
+                          await appointments.deleteImg(
+                              widget.panel.item.id, img);
                           widget.panel.item.imgs.remove(img);
                           appointments.set(widget.panel.item);
-                          widget.panel.savedJson = jsonEncode(widget.panel.item.toJson());
+                          widget.panel.savedJson =
+                              jsonEncode(widget.panel.item.toJson());
                         } catch (e, s) {
                           logger("Error during deleting image: $e", s);
                         }
@@ -201,6 +220,7 @@ class _AppointmentGalleryState extends State<_AppointmentGallery> {
 
 class _AppointmentDetails extends StatefulWidget {
   final Appointment appointment;
+
   const _AppointmentDetails(this.appointment);
 
   @override
@@ -210,113 +230,159 @@ class _AppointmentDetails extends StatefulWidget {
 class _AppointmentDetailsState extends State<_AppointmentDetails> {
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        InfoLabel(
-          /// rebuild needed if a patient is selected/deselected
-          key: Key(widget.appointment.patientID ?? ""),
-          label: "${txt("patient")}:",
-          child: Row(mainAxisSize: MainAxisSize.min, mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Expanded(
-              child: PatientPicker(
-                  value: widget.appointment.patientID,
-                  onChanged: (id) {
-                    setState(() {
-                      widget.appointment.patientID = id;
-                    });
-                  }),
-            ),
-            const SizedBox(width: 5),
-            if (widget.appointment.patientID == null)
-              AcrylicButton(
-                  icon: FluentIcons.add_friend,
-                  text: txt("newPatient"),
-                  onPressed: () async {
-                    final newPatientId = uuid();
-                    final newPatient = await openPatient(Patient.fromJson({"id": newPatientId}));
-                    routes.closePanel(newPatientId);
-                    widget.appointment.patientID = newPatient.id;
-                  })
-          ]),
-        ),
-        InfoLabel(
-          label: "${txt("doctors")}:",
-          child: OperatorsPicker(
-              value: widget.appointment.operatorsIDs,
-              onChanged: (s) {
-                widget.appointment.operatorsIDs = s;
-              }),
-        ),
-        Column(
-          children: [
-            InfoLabel(
-              label: "${txt("date")}:",
-              child: DateTimePicker(
-                key: WK.fieldAppointmentDate,
-                initValue: widget.appointment.date,
-                onChange: (d) {
-                  widget.appointment.date = DateTime(
-                    d.year,
-                    d.month,
-                    d.day,
-                    widget.appointment.date.hour,
-                    widget.appointment.date.minute,
-                  );
-                },
-                buttonText: txt("changeDate"),
-                buttonIcon: FluentIcons.calendar,
-                format: "d MMMM yyyy",
+    return Form(
+      key: _key,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          InfoLabel(
+            /// rebuild needed if a patient is selected/deselected
+            key: Key(widget.appointment.patientID ?? ""),
+            label: "${txt("patient")}:",
+            child: Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: FormField<String>(
+                        validator: ValidationBuilder().required().build(),
+                        builder: (field) {
+                          return Container(
+                              decoration: field.hasError
+                                  ? BoxDecoration(
+                                      border: Border.all(color: Colors.red))
+                                  : null,
+                              child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    PatientPicker(
+                                        value: widget.appointment.patientID,
+                                        onChanged: (id) {
+                                          widget.appointment.patientID = id;
+                                          field.didChange(
+                                              widget.appointment.patientID);
+                                        }),
+                                    if (field.hasError)
+                                      Text(
+                                        field.errorText!,
+                                        style: TextStyle(color: Colors.red),
+                                      )
+                                  ]));
+                        }),
+                  ),
+                  const SizedBox(width: 5),
+                  if (widget.appointment.patientID == null)
+                    AcrylicButton(
+                        icon: FluentIcons.add_friend,
+                        text: txt("newPatient"),
+                        onPressed: () async {
+                          final newPatientId = uuid();
+                          final newPatient = await openPatient(
+                              Patient.fromJson({"id": newPatientId}));
+                          routes.closePanel(newPatientId);
+                          widget.appointment.patientID = newPatient.id;
+                        })
+                ]),
+          ),
+          InfoLabel(
+            label: "${txt("doctors")}:",
+            child: FormField<List<String>>(validator: (value) {
+              return value?.isEmpty ?? true ? txt('birtv') : null;
+            }, builder: (field) {
+              return Container(
+                  decoration: field.hasError
+                      ? BoxDecoration(border: Border.all(color: Colors.red))
+                      : null,
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        OperatorsPicker(
+                            value: widget.appointment.operatorsIDs,
+                            onChanged: (ids) {
+                              widget.appointment.operatorsIDs = ids;
+                              field.didChange(widget.appointment.operatorsIDs);
+                            }),
+                        if (field.hasError)
+                          Text(
+                            field.errorText!,
+                            style: TextStyle(color: Colors.red),
+                          )
+                      ]));
+            }),
+          ),
+          Column(
+            children: [
+              InfoLabel(
+                label: "${txt("date")}:",
+                child: DateTimePicker(
+                  key: WK.fieldAppointmentDate,
+                  initValue: widget.appointment.date,
+                  onChange: (d) {
+                    widget.appointment.date = DateTime(
+                      d.year,
+                      d.month,
+                      d.day,
+                      widget.appointment.date.hour,
+                      widget.appointment.date.minute,
+                    );
+                  },
+                  buttonText: txt("changeDate"),
+                  buttonIcon: FluentIcons.calendar,
+                  format: "d MMMM yyyy",
+                ),
               ),
+              const SizedBox(height: 5),
+              if (widget.appointment.operators.isNotEmpty &&
+                  !widget.appointment.availableWeekDays
+                      .contains(widget.appointment.date.weekday))
+                InfoBar(
+                  title: Txt(txt("attention")),
+                  content: Txt(txt("doctorNotAvailable")),
+                  severity: InfoBarSeverity.warning,
+                )
+            ],
+          ),
+          InfoLabel(
+            label: "${txt("time")}:",
+            child: DateTimePicker(
+              key: WK.fieldAppointmentTime,
+              initValue: widget.appointment.date,
+              onChange: (d) => {
+                widget.appointment.date = DateTime(
+                  widget.appointment.date.year,
+                  widget.appointment.date.month,
+                  widget.appointment.date.day,
+                  d.hour,
+                  d.minute,
+                )
+              },
+              buttonText: txt("changeTime"),
+              pickTime: true,
+              buttonIcon: FluentIcons.clock,
+              format: "hh:mm a",
             ),
-            const SizedBox(height: 5),
-            if (widget.appointment.operators.isNotEmpty &&
-                !widget.appointment.availableWeekDays.contains(widget.appointment.date.weekday))
-              InfoBar(
-                title: Txt(txt("attention")),
-                content: Txt(txt("doctorNotAvailable")),
-                severity: InfoBarSeverity.warning,
-              )
-          ],
-        ),
-        InfoLabel(
-          label: "${txt("time")}:",
-          child: DateTimePicker(
-            key: WK.fieldAppointmentTime,
-            initValue: widget.appointment.date,
-            onChange: (d) => {
-              widget.appointment.date = DateTime(
-                widget.appointment.date.year,
-                widget.appointment.date.month,
-                widget.appointment.date.day,
-                d.hour,
-                d.minute,
-              )
-            },
-            buttonText: txt("changeTime"),
-            pickTime: true,
-            buttonIcon: FluentIcons.clock,
-            format: "hh:mm a",
           ),
-        ),
-        InfoLabel(
-          label: "${txt("preOperativeNotes")}:",
-          child: CupertinoTextField(
-            key: WK.fieldAppointmentPreOpNotes,
-            expands: true,
-            maxLines: null,
-            controller: TextEditingController(text: widget.appointment.preOpNotes),
-            onChanged: (v) => widget.appointment.preOpNotes = v,
-            placeholder: "${txt("preOperativeNotes")}...",
-          ),
-        )
-      ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+          InfoLabel(
+            label: "${txt("preOperativeNotes")}:",
+            child: CupertinoTextField(
+              key: WK.fieldAppointmentPreOpNotes,
+              expands: true,
+              maxLines: null,
+              controller:
+                  TextEditingController(text: widget.appointment.preOpNotes),
+              onChanged: (v) => widget.appointment.preOpNotes = v,
+              placeholder: "${txt("preOperativeNotes")}...",
+            ),
+          )
+        ].map((e) => [e, const SizedBox(height: 10)]).expand((e) => e).toList(),
+      ),
     );
   }
 }
 
 class _OperativeDetails extends StatefulWidget {
   final Appointment appointment;
+
   const _OperativeDetails(this.appointment);
 
   @override
@@ -369,14 +435,21 @@ class _OperativeDetailsState extends State<_OperativeDetails> {
           label: "${txt("prescription")}:",
           child: TagInputWidget(
             key: WK.fieldAppointmentPrescriptions,
-            suggestions: appointments.allPrescriptions.map((p) => TagInputItem(value: p, label: p)).toList(),
+            suggestions: appointments.allPrescriptions
+                .map((p) => TagInputItem(value: p, label: p))
+                .toList(),
             onChanged: (s) {
               setState(() {
-                widget.appointment.prescriptions = s.where((x) => x.value != null).map((x) => x.value!).toList();
+                widget.appointment.prescriptions = s
+                    .where((x) => x.value != null)
+                    .map((x) => x.value!)
+                    .toList();
                 widget.appointment.isDone = true;
               });
             },
-            initialValue: widget.appointment.prescriptions.map((p) => TagInputItem(value: p, label: p)).toList(),
+            initialValue: widget.appointment.prescriptions
+                .map((p) => TagInputItem(value: p, label: p))
+                .toList(),
             strict: false,
             limit: 999,
             placeholder: "${txt("prescription")}...",
@@ -387,7 +460,11 @@ class _OperativeDetailsState extends State<_OperativeDetails> {
               style: const ButtonStyle(elevation: WidgetStatePropertyAll(2)),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
-                children: [const Icon(FluentIcons.print), const SizedBox(width: 10), Txt(txt("printPrescription"))],
+                children: [
+                  const Icon(FluentIcons.print),
+                  const SizedBox(width: 10),
+                  Txt(txt("printPrescription"))
+                ],
               ),
               onPressed: () {
                 printingPrescription(
@@ -403,7 +480,8 @@ class _OperativeDetailsState extends State<_OperativeDetails> {
           children: [
             Expanded(
               child: InfoLabel(
-                label: "${txt("priceIn")} ${globalSettings.get("currency_______").value}",
+                label:
+                    "${txt("priceIn")} ${globalSettings.get("currency_______").value}",
                 child: CupertinoTextField(
                   key: WK.fieldAppointmentPrice,
                   controller: priceController,
@@ -412,7 +490,8 @@ class _OperativeDetailsState extends State<_OperativeDetails> {
                       widget.appointment.price = double.tryParse(v) ?? 0;
                       if (didNotEditPaidYet) {
                         widget.appointment.paid = double.tryParse(v) ?? 0;
-                        paidController.text = widget.appointment.paid.toStringAsFixed(0);
+                        paidController.text =
+                            widget.appointment.paid.toStringAsFixed(0);
                       }
                       widget.appointment.isDone = true;
                     });
@@ -426,7 +505,8 @@ class _OperativeDetailsState extends State<_OperativeDetails> {
             const SizedBox(width: 10),
             Expanded(
               child: InfoLabel(
-                label: "${txt("paidIn")} ${globalSettings.get("currency_______").value}",
+                label:
+                    "${txt("paidIn")} ${globalSettings.get("currency_______").value}",
                 child: CupertinoTextField(
                   key: WK.fieldAppointmentPayment,
                   controller: paidController,
